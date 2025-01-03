@@ -15,6 +15,7 @@
 
 ## GRUPA A
 - chat pomiędzy użytkownikami z TCP/IP
+- Gniazda powinny być otworzone pomiędzy grającymi użytkownikami
 - Serwer udostępnia iformacjęo adresach IP użytkowników
 ![image](https://github.com/user-attachments/assets/e624110e-2d44-481f-a49f-e2ecf4c448df)
 
