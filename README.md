@@ -26,3 +26,12 @@
 4. Obsługa N klientów (skalowalność)
 5. Obsługa mechaniki pokojów (gracze nie są parowami losowego)
 6. Implementacja funkcjonalności chatu pomiędzy dwoma graczami z wykorzystaniem mechanizmu gniazd TCP/IP.
+
+## Ocena
+1. Aplikacja rozdzielona na 2 archiwa jar (klient, serwer)
+2. Zaimplementowana poprawna mechanika gry
+3. Mechanizm zbierania podstawowych statystyk (wygrane, porazki, remisy)
+4. Rozgrywka klient-serwer za pomocą RMI
+5. Obsługa N klientów
+6. Mechanizm parowanie graczy (pokoje, tokeny, ...)
+7. Implementacja funkcjonalności chatu za pomocą protokołu TCP/IP
