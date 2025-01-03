@@ -20,17 +20,17 @@ tic-tac-toe/
 ├── client/
 │   ├── Main.java
 │   ├── controller/
-│   │   ├── UserController.java  
+│   │   ├── ClientController.java  
 │   │
 │   ├── model/
-│   │   ├── User.java           
+│   │   ├── Client.java           
 │   │
 │   ├── view/
 │   │   ├── UI.java               
 │
 ├── shared/
 │   ├── GameServerInterface.java 
-│   ├── UserInterface.java  
+│   ├── ClientInterface.java  
 │   ├── enumy
 ```
 
