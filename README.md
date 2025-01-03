@@ -11,3 +11,17 @@
 - Serwer powinen obsługiwać więcej niż jednego gracza w tym samym momencie (np. poprzez realizację gier w dedykowanych pokojach lub tworzenie tokenów poszczególnych sesji wymienianych przez graczy).
 - Serwer powinen obliczać statystyki graczy w danej sesji - ilość wygranych, remisów oraz porażek.
 - Aplikacja serwera powinna logować w konsoli kluczowe dane (parowanie użytkowników, błędy, koniec gry, itp).
+- zalecane java.nio
+
+## GRUPA A
+- chat pomiędzy użytkownikami z TCP/IP
+- Serwer udostępnia iformacjęo adresach IP użytkowników
+![image](https://github.com/user-attachments/assets/e624110e-2d44-481f-a49f-e2ecf4c448df)
+
+## Wymagania
+1. Minimum dwie aplikacje (serwer, klient, obserwator*)
+2. Zaimplementowane zasady gry, statystyki
+3. Komunikacja z wykorzystaniem protokołu RMI
+4. Obsługa N klientów (skalowalność)
+5. Obsługa mechaniki pokojów (gracze nie są parowami losowego)
+6. Implementacja funkcjonalności chatu pomiędzy dwoma graczami z wykorzystaniem mechanizmu gniazd TCP/IP.
