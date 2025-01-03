@@ -29,8 +29,8 @@ tic-tac-toe/
 │   │   ├── UI.java               
 │
 ├── shared/
-│   ├── ServerInterface.java 
-│   ├── ClientInterface.java  
+│   ├── GameServerInterface.java 
+│   ├── UserInterface.java  
 │   ├── enumy
 ```
 
