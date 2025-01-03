@@ -14,6 +14,11 @@
 - zalecane java.nio
 
 ## GRUPA A
+klient podlacza sie do serwera, nie ma nikogo innego to czeka
+podlacza sie drugi gracz i moze zdecydowac czy chce grac z 1 czy czeka
+Czat bez udzialu serwera
+Serwer prowadzi informacje o polaczonych klientach (adresach ip) i kazdy kazdy gracz moze sobie pobrac ip drugiego gracza i nawiazac komunikacje po danym porcie. 
+
 - chat pomiędzy użytkownikami z TCP/IP
 - Gniazda powinny być otworzone pomiędzy grającymi użytkownikami
 - Serwer udostępnia iformacjęo adresach IP użytkowników
