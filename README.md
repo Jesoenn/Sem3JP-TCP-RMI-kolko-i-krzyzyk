@@ -1,4 +1,23 @@
 # Kółko i krzyżyk (klient - serwer)
+### Struktura plików
+```
+tic-tac-toe/
+│
+├── server/
+|   ├── GameServer.java
+│   ├── GameEngine.java
+|   ├── GameRoom.java
+│   ├── PlayerStats.java
+│
+├── client/
+│   ├── User.java
+│   ├── UI.java
+│
+├── shared/
+```
+
+
+
 ## Treść programowa:
 1. Rozpraszanie obliczeń poprzez wykorzystanie gniazd TCP/IP.
 2. Rozpraszanie obliczeń poprzez zdalne wywoływanie procedur. (RMI)
