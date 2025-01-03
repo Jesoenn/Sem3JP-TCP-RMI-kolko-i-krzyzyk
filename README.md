@@ -4,16 +4,34 @@
 tic-tac-toe/
 │
 ├── server/
-|   ├── GameServer.java
-│   ├── GameEngine.java
-|   ├── GameRoom.java
-│   ├── PlayerStats.java
+|   ├── Main.java
+|   ├── controller/
+│   │   ├── GameServer.java      
+│   │   ├── GameController.java  
+│   │
+│   ├── model/
+│   │   ├── GameEngine.java      
+│   │   ├── GameRoom.java         
+│   │   ├── PlayerStats.java      
+│   │
+│   ├── view/
+│       ├── ServerLogger.java    
 │
 ├── client/
-│   ├── User.java
-│   ├── UI.java
+│   ├── Main.java
+│   ├── controller/
+│   │   ├── UserController.java  
+│   │
+│   ├── model/
+│   │   ├── User.java           
+│   │
+│   ├── view/
+│   │   ├── UI.java               
 │
 ├── shared/
+│   ├── ServerInterface.java 
+│   ├── ClientInterface.java  
+│   ├── enumy
 ```
 
 
