@@ -1,4 +1,7 @@
 # Kółko i krzyżyk (klient - serwer)
+### Zrobione
+- klient łączy się z serwerem. Może stworzyć swój pokój, albo dołączyć do innego, w którym jest 1 osoba.
+
 ### Struktura plików
 ```
 tic-tac-toe/
