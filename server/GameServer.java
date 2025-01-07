@@ -6,6 +6,7 @@ import shared.IGameServer;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class GameServer implements IGameServer {
@@ -74,7 +75,7 @@ public class GameServer implements IGameServer {
     @Override
     public String getOpponentUsername(String username) throws RemoteException {
         User player = searchUser(username);
-        Room room = searchRoom(player.getRoom());
+        Room room = searchRoom(Objects.requireNonNull(player).getRoom());
         for(User user: room.getPlayers() ){
             if(!user.getUsername().equals(username))
                 return user.getUsername();
@@ -90,6 +91,7 @@ public class GameServer implements IGameServer {
         Room room = searchRoom(player.getRoom());
         if(room == null)
             return false;
+
         return room.isGameActive();
     }
 
@@ -105,16 +107,22 @@ public class GameServer implements IGameServer {
         user.setRoom(-1);
         room.removePlayer(user);
         user.setNotReady();
-        System.out.println(username+" left room <"+room.getId()+">");
         if(room.isGameActive()){
+            System.out.println(username+" left active room <"+room.getId()+">");
             user.addLose();
             room.getPlayers().getFirst().addWin();
+            System.out.println(room.getPlayers().getFirst().getUsername()+" has won in room <"+room.getId()+">");
             room.endGame();
             //Koncze gre jakos jeszcze
         }
-        if(room.getPlayers().isEmpty()){
-            rooms.remove(room);
+        else{
+            System.out.println(username+" left room <"+room.getId()+">");
         }
+        if(!room.getPlayers().isEmpty()){
+            room.getPlayers().getFirst().setNotReady();
+        }
+        else
+            deleteRoom(room);
 
         //Uwzglednione:
         //Uzytkownik ma pokoj -1
@@ -150,14 +158,15 @@ public class GameServer implements IGameServer {
         return room.getBoard();
     }
 
-    //0 tile taken
+    //0 tile taken/wrong tile
     //1 not your turn
     //2 turn completed
     //3 win
     //4 draw
-    //5 lose
     @Override
     public int makeMove(String username, int row, int column) throws RemoteException {
+        if(checkBoardValues(row) || checkBoardValues(column))
+            return 0;
         User player = Objects.requireNonNull(searchUser(username));
         Room room = Objects.requireNonNull(searchRoom(player.getRoom()));
         if(!room.isPlayersTurn(player))
@@ -184,8 +193,6 @@ public class GameServer implements IGameServer {
                 }
                 return 4;
             }
-
-
             return 2;
         }
         return 0;
@@ -196,6 +203,62 @@ public class GameServer implements IGameServer {
         User player = Objects.requireNonNull(searchUser(username));
         Room room = Objects.requireNonNull(searchRoom(player.getRoom()));
         return room.isPlayersTurn(player);
+    }
+
+    @Override
+    public void leave(String username) throws RemoteException {
+        User user = searchUser(username);
+        if(user == null)
+            return;
+        System.out.println(username+" left the game.");
+        //Not in any room
+        if(user.getRoom() == -1){
+            users.remove(user);
+            return;
+        }
+        Room room = searchRoom(user.getRoom());
+        if(room == null)
+            return;
+        //In active game
+        if(room.isGameActive()){
+            room.removePlayer(user);
+            User winner = room.getPlayers().getFirst();
+            System.out.println("User "+winner.getUsername()+" has won in Room <"+user.getRoom()+">");
+            winner.setNotReady();
+            room.endGame();
+        }
+        //If was in room alone
+        else if(room.getPlayers().size() == 1)
+            deleteRoom(room);
+        //If was in room with somebody
+        else{
+            room.removePlayer(user);
+            room.getPlayers().getFirst().setNotReady();
+        }
+        users.remove(user);
+    }
+
+    @Override
+    public ArrayList<String> getAvailableRoomList() {
+        ArrayList<String> roomIds = new ArrayList<>();
+        for(Room room: rooms){
+            if(room.getPlayers().size()<2)
+                roomIds.add(String.valueOf(room.getId()));
+        }
+        return roomIds;
+    }
+
+    @Override
+    public HashMap<String, ArrayList<Integer>> getPlayerStats() throws RemoteException {
+        HashMap<String, ArrayList<Integer>> playerStats=new HashMap<>();
+        for(User user: users){
+            ArrayList<Integer> stats = new ArrayList<>();
+            stats.add(user.getWins());
+            stats.add(user.getDraws());
+            stats.add(user.getLoses());
+            playerStats.put(user.getUsername(),stats);
+        }
+        return playerStats;
     }
 
 
@@ -227,6 +290,13 @@ public class GameServer implements IGameServer {
         return null;
     }
 
+    private void deleteRoom(Room room){
+        System.out.println("Room <"+room.getId()+"> deleted.");
+        rooms.remove(room);
+    }
+    private boolean checkBoardValues(int value){
+        return value <= 2 && value >= 0;
+    }
     public void gameEndOperations(){
 
     }

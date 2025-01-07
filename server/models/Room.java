@@ -41,6 +41,7 @@ public class Room {
     }
     public void endGame(){
         gameActive = false;
+        whoseTurn = null;
     }
     public boolean makeMove(int row, int column, Board.Symbol symbol){
         boolean moveSuccess=board.makeMove(row, column, symbol);

@@ -2,6 +2,8 @@ package shared;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public interface IGameServer extends Remote {
     boolean connect(String username) throws RemoteException;
@@ -15,4 +17,7 @@ public interface IGameServer extends Remote {
     String[][] getBoard(String username) throws RemoteException;
     int makeMove(String username, int row, int column) throws RemoteException;
     boolean isPlayersTurn(String username) throws RemoteException;
+    void leave(String username) throws RemoteException;
+    ArrayList<String> getAvailableRoomList() throws RemoteException;
+    HashMap<String, ArrayList<Integer>> getPlayerStats() throws RemoteException;
 }

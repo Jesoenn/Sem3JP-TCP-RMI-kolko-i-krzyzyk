@@ -29,5 +29,7 @@ public class Main {
         }
     }
 
-    public static void parseArguments(String[] args){}
+    public static void parseArguments(String[] args){
+        //java -jar client.jar port username
+    }
 }

@@ -2,12 +2,17 @@ package client;
 
 import shared.IGameServer;
 
+import java.lang.reflect.Array;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClientService {
     private IGameServer server;
     private String username, opponentUsername;
-    private boolean activeGame, ready;
+    private boolean activeGame, ready, playersTurn;
     private String[][] board;
     private int roomId;
     private UI ui;
@@ -15,6 +20,9 @@ public class ClientService {
         this.server = server;
         this.username = username;
         ui = new UI();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(this::deleteUser));
+
         start();
     }
     private void start() throws RemoteException {
@@ -31,22 +39,22 @@ public class ClientService {
                         yield ui.errorStatus(UI.Display.JOIN_ROOM);
                     yield UI.Display.ROOM;
                 }
+                case ROOM_LIST -> ui.viewRooms(getAvailableRooms());
+                case PLAYER_STATS -> ui.viewPlayerStats(getPlayerStats());
                 //CO KAZDE ODPALENIE UPDATE CZY KTOS DOLACZYL ITD
                 case ROOM -> {
                     getGameInfo();
-                    yield ui.viewRoomInfo(username,opponentUsername,String.valueOf(roomId),activeGame,ready, board);}
+                    yield ui.viewRoomInfo(username,opponentUsername,String.valueOf(roomId),activeGame,ready, board,playersTurn);}
                 case MAKE_MOVE -> {
                     int answer = makeMove();
                     if(answer == 2)
                         yield UI.Display.ROOM;
-                    else if (answer == 1){
-                        ui.errorStatus(UI.Display.WRONG_TURN);
-                        yield UI.Display.ROOM;
-                    }
                     else if (answer == 0){
                         ui.errorStatus(UI.Display.TILE_TAKEN);
                         yield UI.Display.ROOM;
                     }
+                    else if(answer == 3)
+                        ui.errorStatus(UI.Display.WINNER);
                     yield UI.Display.ROOM;
                 }
                 case LEAVE_ROOM -> { leaveRoom(); yield ui.viewMainMenu(); }
@@ -78,7 +86,9 @@ public class ClientService {
         ready = server.isReady(username);
     }
 
-
+    private void isPlayersTurn() throws RemoteException {
+        playersTurn = server.isPlayersTurn(username);
+    }
 
     private void getOpponentUsername() throws RemoteException {
         opponentUsername = server.getOpponentUsername(username);
@@ -86,11 +96,32 @@ public class ClientService {
     private void getGameInfo() throws RemoteException {
         getOpponentUsername();
         isPlayerReady();
+        isPlayersTurn();
         activeGame=server.isRoomGameActive(username);
         if(activeGame){
-            if(server.isPlayersTurn(username))
-                ui.errorStatus(UI.Display.YOUR_TURN);
             board=server.getBoard(username);
         }
+    }
+    private void deleteUser() {
+        try {
+            server.leave(username);
+        } catch (RemoteException e) {
+            System.out.println("Error leaving the game.");
+        }
+    }
+    private ArrayList<String> getAvailableRooms() throws RemoteException{
+        return server.getAvailableRoomList();
+    }
+    private HashMap<String, ArrayList<String>> getPlayerStats() throws RemoteException{
+        HashMap<String, ArrayList<Integer>> playerStats = server.getPlayerStats();
+        HashMap<String, ArrayList<String>> formattedPlayerStats = new HashMap<>();
+        for(Map.Entry<String, ArrayList<Integer>> set: playerStats.entrySet()) {
+            ArrayList<Integer> values = set.getValue();
+            ArrayList<String> formattedValues = new ArrayList<>();
+            for(int value: values)
+                formattedValues.add(String.valueOf(value));
+            formattedPlayerStats.put(set.getKey(),formattedValues);
+        }
+        return formattedPlayerStats;
     }
 }
