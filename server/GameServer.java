@@ -12,11 +12,13 @@ import java.util.Objects;
 public class GameServer implements IGameServer {
     private ArrayList<User> users;
     private ArrayList<Room> rooms;
+    private HashMap<String, String> ipList;
 
     public GameServer() {
         System.out.println("Server created.");
         users = new ArrayList<>();
         rooms = new ArrayList<>();
+        ipList = new HashMap<>();
     }
 
     @Override
@@ -213,6 +215,7 @@ public class GameServer implements IGameServer {
         System.out.println(username+" left the game.");
         //Not in any room
         if(user.getRoom() == -1){
+            ipList.remove(user.getUsername());
             users.remove(user);
             return;
         }
@@ -235,6 +238,7 @@ public class GameServer implements IGameServer {
             room.removePlayer(user);
             room.getPlayers().getFirst().setNotReady();
         }
+        ipList.remove(user.getUsername());
         users.remove(user);
     }
 
@@ -259,6 +263,29 @@ public class GameServer implements IGameServer {
             playerStats.put(user.getUsername(),stats);
         }
         return playerStats;
+    }
+
+    @Override
+    public void addUserIP(String username, String ip) throws RemoteException {
+        ipList.put(username,ip);
+    }
+
+    @Override
+    public String getOpponentIP(String username) throws RemoteException {
+        User user = searchUser(username);
+        Room room = searchRoom(Objects.requireNonNull(user).getRoom());
+        for(User players: room.getPlayers()){
+            if(!players.getUsername().equals(username))
+                return ipList.get(players.getUsername());
+        }
+        return null;
+    }
+
+    @Override
+    public boolean isRoomFull(String username) throws RemoteException {
+        User user = searchUser(username);
+        Room room = searchRoom(Objects.requireNonNull(user).getRoom());
+        return room.getPlayers().size()==2;
     }
 
 
@@ -296,8 +323,5 @@ public class GameServer implements IGameServer {
     }
     private boolean checkBoardValues(int value){
         return value <= 2 && value >= 0;
-    }
-    public void gameEndOperations(){
-
     }
 }

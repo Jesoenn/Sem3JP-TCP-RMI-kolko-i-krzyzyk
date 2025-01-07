@@ -1,5 +1,7 @@
 package client;
 
+import client.chat.ChatConnection;
+import client.chat.ChatReceiverThread;
 import shared.IGameServer;
 
 import java.lang.reflect.Array;
@@ -15,12 +17,14 @@ public class ClientService {
     private boolean activeGame, ready, playersTurn;
     private String[][] board;
     private int roomId;
+    private ChatConnection chat;
     private UI ui;
     public ClientService(IGameServer server, String username) throws RemoteException {
         this.server = server;
         this.username = username;
         ui = new UI();
-
+        chat = new ChatConnection();
+        addUserIP();
         Runtime.getRuntime().addShutdownHook(new Thread(this::deleteUser));
 
         start();
@@ -32,7 +36,7 @@ public class ClientService {
             currentFrame = switch(currentFrame){
                 case MAIN_MENU -> ui.viewMainMenu();
                 case CREATE_ROOM -> {
-                    this.roomId = createRoom();
+                    createRoom();
                     yield UI.Display.ROOM; }
                 case JOIN_ROOM -> {
                     if(!joinRoom())
@@ -45,6 +49,10 @@ public class ClientService {
                 case ROOM -> {
                     getGameInfo();
                     yield ui.viewRoomInfo(username,opponentUsername,String.valueOf(roomId),activeGame,ready, board,playersTurn);}
+                case SEND_MESSAGE -> {
+                    sendMessage();
+                    yield UI.Display.ROOM;
+                }
                 case MAKE_MOVE -> {
                     int answer = makeMove();
                     if(answer == 2)
@@ -67,16 +75,21 @@ public class ClientService {
         int[] move = ui.getMove();
         return server.makeMove(username,move[0],move[1]);
     }
-    private int createRoom() throws RemoteException {
-        return server.createRoom(username);
+    private void createRoom() throws RemoteException {
+        roomId=server.createRoom(username);
+        startReceivingMessages();
     }
     private boolean joinRoom() throws RemoteException {
         boolean success = server.joinRoom(username, ui.getRoomId());
-        if(success)
+        if(success){
             roomId = ui.getRoomId();
+            startReceivingMessages();
+        }
         return success;
     }
     private void leaveRoom() throws RemoteException {
+        chat.endConnection();
+        roomId = -1;
         server.leaveRoom(username);
     }
     private void markReady() throws RemoteException {
@@ -85,7 +98,11 @@ public class ClientService {
     private void isPlayerReady() throws RemoteException {
         ready = server.isReady(username);
     }
+    private void sendMessage() {
+        String message = username+": "+ui.getMessage();
+        chat.sendMessage(message);
 
+    }
     private void isPlayersTurn() throws RemoteException {
         playersTurn = server.isPlayersTurn(username);
     }
@@ -94,6 +111,14 @@ public class ClientService {
         opponentUsername = server.getOpponentUsername(username);
     }
     private void getGameInfo() throws RemoteException {
+        if(server.isRoomFull(username) && !chat.isConnectionEstablished()){
+            chat.connectToOpponent(server.getOpponentIP(username),roomId);
+        }
+        if(!server.isRoomFull(username) && chat.isServerWorking()){
+            chat.endConnection();
+            startReceivingMessages();
+        }
+        ui.viewMessages(chat.getMessages());
         getOpponentUsername();
         isPlayerReady();
         isPlayersTurn();
@@ -105,9 +130,13 @@ public class ClientService {
     private void deleteUser() {
         try {
             server.leave(username);
+            chat.endConnection();
         } catch (RemoteException e) {
             System.out.println("Error leaving the game.");
         }
+    }
+    private void addUserIP() throws RemoteException {
+        server.addUserIP(username,chat.getLocalIP());
     }
     private ArrayList<String> getAvailableRooms() throws RemoteException{
         return server.getAvailableRoomList();
@@ -123,5 +152,9 @@ public class ClientService {
             formattedPlayerStats.put(set.getKey(),formattedValues);
         }
         return formattedPlayerStats;
+    }
+    private void startReceivingMessages(){
+        ChatReceiverThread receiverThread = new ChatReceiverThread(chat, roomId);
+        receiverThread.start();
     }
 }

@@ -11,8 +11,6 @@ public class Main {
         //PODAWANE W LINII KOMEND JARU -> parsowanie danych i weryfikacja
         String username = "user1";
         int port = 1099;
-        String host = "localhost";
-
 
         try{
             Registry registry = LocateRegistry.getRegistry(port);

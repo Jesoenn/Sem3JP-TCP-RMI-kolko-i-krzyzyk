@@ -12,10 +12,11 @@ public class UI {
     private Scanner sc;
     private int roomId;
     private int[] move;
+    private String message;
 
     public enum Display{
         MAIN_MENU, CREATE_ROOM, LEAVE_ROOM, ROOM, JOIN_ROOM, MARK_READY, WRONG_TURN, MAKE_MOVE,
-        TILE_TAKEN, WINNER, LOSER, ROOM_LIST, PLAYER_STATS
+        TILE_TAKEN, WINNER, LOSER, ROOM_LIST, PLAYER_STATS, SEND_MESSAGE
     }
 
     public UI(){
@@ -80,7 +81,8 @@ public class UI {
         }
         System.out.println("\nAvailable commands: " +
                 "\nready | leave" +
-                "\nmove \"row\" \"column\"");
+                "\nmove \"row\" \"column\"" +
+                "\nchat \"message\"");
         System.out.print("Command: ");
         String input = sc.nextLine();
 
@@ -88,6 +90,10 @@ public class UI {
             if(!checkMoveCommand(input.substring(5)))
                 return Display.ROOM;
             input="move";
+        }
+        else if(input.startsWith("chat ")){
+            message = input.substring(5);
+            return Display.SEND_MESSAGE;
         }
         return switch(input){
             case "leave" -> Display.LEAVE_ROOM;
@@ -101,7 +107,11 @@ public class UI {
 
 
 
-
+    public void viewMessages(ArrayList<String> messages){
+        for (String message : messages)
+            System.out.println(message);
+        System.out.println();
+    }
 
 
     public Display errorStatus(Display display){
@@ -203,7 +213,9 @@ public class UI {
             System.out.println("Sleep error");
         }
     }
-
+    public String getMessage(){
+        return message;
+    }
     public int getRoomId(){
         return roomId;
     }

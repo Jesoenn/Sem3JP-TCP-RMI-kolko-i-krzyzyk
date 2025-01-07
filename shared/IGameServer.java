@@ -20,4 +20,7 @@ public interface IGameServer extends Remote {
     void leave(String username) throws RemoteException;
     ArrayList<String> getAvailableRoomList() throws RemoteException;
     HashMap<String, ArrayList<Integer>> getPlayerStats() throws RemoteException;
+    void addUserIP(String username, String ip) throws RemoteException;
+    String getOpponentIP(String username) throws RemoteException;
+    boolean isRoomFull(String username) throws RemoteException;
 }
