@@ -2,6 +2,9 @@ package client;
 
 import server.models.Board;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.LinkPermission;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +19,7 @@ public class UI {
 
     public enum Display{
         MAIN_MENU, CREATE_ROOM, LEAVE_ROOM, ROOM, JOIN_ROOM, MARK_READY, WRONG_TURN, MAKE_MOVE,
-        TILE_TAKEN, WINNER, LOSER, ROOM_LIST, PLAYER_STATS, SEND_MESSAGE
+        TILE_TAKEN, WINNER, LOSER, ROOM_LIST, PLAYER_STATS, SEND_MESSAGE, TEMP
     }
 
     public UI(){
@@ -75,16 +78,31 @@ public class UI {
             System.out.println("Your Turn\n=====================");
 
 
-        if(!playersTurn && ready){
-            sleep(1000);
-            return Display.ROOM;
-        }
+//        if(!playersTurn && ready){
+//            sleep(1000);
+//            return Display.ROOM;
+//        }
         System.out.println("\nAvailable commands: " +
                 "\nready | leave" +
                 "\nmove \"row\" \"column\"" +
                 "\nchat \"message\"");
         System.out.print("Command: ");
-        String input = sc.nextLine();
+        //String input = sc.nextLine();
+
+        //new Code:
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        String input="";
+        try{
+            while(!Thread.currentThread().isInterrupted() && input.isEmpty()){
+                if(reader.ready())
+                    input=reader.readLine();
+            }
+        }catch(Exception e){
+            System.out.println("\n\nFATAL READING ERROR");
+            sleep(1500);
+            System.exit(-1);
+        }
+
 
         if(input.startsWith("move") && gameStarted){
             if(!checkMoveCommand(input.substring(5)))
@@ -166,12 +184,6 @@ public class UI {
     }
 
 
-    // Jakies komendy typu exit, idk
-    public void globalCommands(){}
-
-
-
-
     private void waitForInput(){
         System.out.print("Press ENTER to return to main menu...");
         sc.nextLine();
@@ -190,7 +202,7 @@ public class UI {
         try{
             move = new int[2];
             for(int i=0; i<splitText.length; i++){
-                move[i] = Integer.parseInt(splitText[i]);
+                move[i] = Integer.parseInt(splitText[i]);;
                 if(move[i] > 2 || move[i] < 0)
                     throw new NumberFormatException();
             }
@@ -206,7 +218,7 @@ public class UI {
         System.out.println("\n\n\n\n\n\n\n\n");
     }
 
-    private void sleep(int time){
+    public void sleep(int time){
         try {
             Thread.sleep(time);
         } catch (InterruptedException e) {

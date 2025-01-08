@@ -13,12 +13,14 @@ public class GameServer implements IGameServer {
     private ArrayList<User> users;
     private ArrayList<Room> rooms;
     private HashMap<String, String> ipList;
+    private ArrayList<Integer> changedRoomsIds;
 
     public GameServer() {
         System.out.println("Server created.");
         users = new ArrayList<>();
         rooms = new ArrayList<>();
         ipList = new HashMap<>();
+        changedRoomsIds = new ArrayList<>();
     }
 
     @Override
@@ -66,6 +68,7 @@ public class GameServer implements IGameServer {
                 room.addPlayer(player);
                 player.setRoom(room.getId());
                 System.out.println(username+" joined room <"+roomId+">");
+                roomChanged(room.getId(),2);
                 return true;
             }
             else
@@ -145,7 +148,8 @@ public class GameServer implements IGameServer {
         if(user == null)
             return;
         user.setReady();
-        readyRoomCheck(user.getRoom());
+        if(readyRoomCheck(user.getRoom()))
+            roomChanged(user.getRoom(),2);
     }
 
     @Override
@@ -167,8 +171,9 @@ public class GameServer implements IGameServer {
     //4 draw
     @Override
     public int makeMove(String username, int row, int column) throws RemoteException {
-        if(checkBoardValues(row) || checkBoardValues(column))
+        if(!checkBoardValues(row) || !checkBoardValues(column)){
             return 0;
+        }
         User player = Objects.requireNonNull(searchUser(username));
         Room room = Objects.requireNonNull(searchRoom(player.getRoom()));
         if(!room.isPlayersTurn(player))
@@ -288,19 +293,38 @@ public class GameServer implements IGameServer {
         return room.getPlayers().size()==2;
     }
 
+    @Override
+    public boolean isRoomChanged(String username) throws RemoteException {
+        User user = searchUser(username);
+        int roomId = user.getRoom();
+        if(changedRoomsIds.contains(roomId)){
+            changedRoomsIds.remove((Integer) roomId);
+            return true;
+        }
+        return false;
+    }
 
-    private void readyRoomCheck(int id){
+    @Override
+    public void roomChanged(int roomId, int howMany){
+        for(int i=0; i< howMany; i++)
+            changedRoomsIds.add(roomId);
+    }
+
+
+    private boolean readyRoomCheck(int id){
         Room room = searchRoom(id);
         if(room == null)
-            return;
+            return false;
         if(room.getPlayers().size()==2){
             for(User user: room.getPlayers()){
                 if(!user.isReady())
-                    return;
+                    return false;
             }
             room.startGame();
             System.out.println("Room <"+id+"> is ready. Starting game.");
+            return true;
         }
+        return false;
     }
 
     private User searchUser(String username){
@@ -319,6 +343,12 @@ public class GameServer implements IGameServer {
 
     private void deleteRoom(Room room){
         System.out.println("Room <"+room.getId()+"> deleted.");
+        while(true){
+            if(changedRoomsIds.contains(room.getId()))
+                changedRoomsIds.remove(room.getId());
+            else
+                break;
+        }
         rooms.remove(room);
     }
     private boolean checkBoardValues(int value){

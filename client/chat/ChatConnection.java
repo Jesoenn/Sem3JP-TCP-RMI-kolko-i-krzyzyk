@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 public class ChatConnection {
     //Zbieram swoje ip i moge je dac dalej
@@ -45,17 +46,17 @@ public class ChatConnection {
         }
     }
 
-    public void startReceiving(int roomId){
+    public void startReceiving(int roomId, CountDownLatch latch){
         messageHistory=new ArrayList<>();
         int port=findAvailablePort(roomId);
         if(port==-1)
             return;
-        BufferedReader in;
         try {
             serverPort=port;
             serverWorking=true;
             serverSocket = new ServerSocket(port);
-            System.out.println("Created Server on port "+port);
+            System.out.println("Created Server on port "+port+"\n");
+            latch.countDown();
             acceptNewClient();
         } catch (IOException e) {
             System.out.println("Error creating server socket.");
@@ -88,7 +89,7 @@ public class ChatConnection {
             socket = new Socket(ip, port);
             connectionEstablished=true;
             out = new PrintWriter(socket.getOutputStream(), true);
-            System.out.println("\n\nConnection established.\n\n");
+            System.out.println("\nChat connection established.\n");
         } catch (IOException e) {
             System.out.println("Cannot connect to chat under port "+port);
         }
@@ -121,7 +122,7 @@ public class ChatConnection {
     private int findAvailablePort(int roomId){
         int port1=roomId*2;
         int port2=roomId*2-1;
-        System.out.println("Port1 "+port1+" | Port 2 "+port2+")");
+        System.out.println("Port1: "+port1+" | Port2: "+port2+")");
         if(isAvailable(port1))
             return port1;
         else if (isAvailable(port2))

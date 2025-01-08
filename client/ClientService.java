@@ -10,6 +10,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 public class ClientService {
     private IGameServer server;
@@ -19,6 +20,7 @@ public class ClientService {
     private int roomId;
     private ChatConnection chat;
     private UI ui;
+    private ViewRoomThread viewRoomThread;
     public ClientService(IGameServer server, String username) throws RemoteException {
         this.server = server;
         this.username = username;
@@ -45,16 +47,32 @@ public class ClientService {
                 }
                 case ROOM_LIST -> ui.viewRooms(getAvailableRooms());
                 case PLAYER_STATS -> ui.viewPlayerStats(getPlayerStats());
-                //CO KAZDE ODPALENIE UPDATE CZY KTOS DOLACZYL ITD
                 case ROOM -> {
+                    UI.Display gatherFrame=UI.Display.TEMP;
                     getGameInfo();
-                    yield ui.viewRoomInfo(username,opponentUsername,String.valueOf(roomId),activeGame,ready, board,playersTurn);}
+                    createViewRoomThread(gatherFrame);
+                    while(true){
+                        ui.sleep(1500);
+                        if(server.isRoomChanged(username)){
+                            stopRoomThread();
+                            yield UI.Display.ROOM;
+                        }
+                        if(gatherFrame!=viewRoomThread.getDisplay()){
+                            stopRoomThread();
+                            yield viewRoomThread.getDisplay();
+                        }
+                    }
+
+                    //getGameInfo();
+                    //yield ui.viewRoomInfo(username,opponentUsername,String.valueOf(roomId),activeGame,ready, board,playersTurn);
+                }
                 case SEND_MESSAGE -> {
                     sendMessage();
                     yield UI.Display.ROOM;
                 }
                 case MAKE_MOVE -> {
                     int answer = makeMove();
+                    System.out.println(answer);
                     if(answer == 2)
                         yield UI.Display.ROOM;
                     else if (answer == 0){
@@ -98,23 +116,25 @@ public class ClientService {
     private void isPlayerReady() throws RemoteException {
         ready = server.isReady(username);
     }
-    private void sendMessage() {
+    private void sendMessage() throws RemoteException {
+        server.roomChanged(roomId,2);
         String message = username+": "+ui.getMessage();
         chat.sendMessage(message);
-
     }
     private void isPlayersTurn() throws RemoteException {
         playersTurn = server.isPlayersTurn(username);
     }
 
-    private void getOpponentUsername() throws RemoteException {
+    public String getOpponentUsername() throws RemoteException {
         opponentUsername = server.getOpponentUsername(username);
+        return opponentUsername;
     }
     private void getGameInfo() throws RemoteException {
         if(server.isRoomFull(username) && !chat.isConnectionEstablished()){
             chat.connectToOpponent(server.getOpponentIP(username),roomId);
         }
-        if(!server.isRoomFull(username) && chat.isServerWorking()){
+        if(!server.isRoomFull(username) && !chat.isServerWorking()){
+            System.out.println(chat.isServerWorking());
             chat.endConnection();
             startReceivingMessages();
         }
@@ -154,7 +174,48 @@ public class ClientService {
         return formattedPlayerStats;
     }
     private void startReceivingMessages(){
-        ChatReceiverThread receiverThread = new ChatReceiverThread(chat, roomId);
+        CountDownLatch latch = new CountDownLatch(1);
+        ChatReceiverThread receiverThread = new ChatReceiverThread(chat, roomId, latch);
         receiverThread.start();
+        //Czekam na stworzenie serwera, bo po tym się włacza UI pokoju, które sprawdza czy serwer
+        // już istnieje i jest wyścig wątków. Mogą się stworzyć 2 serwery.
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            System.out.println("Latch error");
+        }
+
     }
+
+    public void createViewRoomThread(UI.Display display){
+        //System.out.println("Tworze watek do ogladania");
+        viewRoomThread = new ViewRoomThread(this, display, ui);
+        viewRoomThread.start();
+    }
+    public void stopRoomThread(){
+        //System.out.println("Usuwam watek do ogladania");
+        viewRoomThread.interrupt();
+    }
+
+
+    public String getUsername(){
+        return username;
+    }
+    public String getRoomId(){
+        return String.valueOf(roomId);
+    }
+    public boolean isActiveGame(){
+        return activeGame;
+    }
+    public boolean isTurn(){
+        return playersTurn;
+    }
+    public boolean isReady(){
+        return ready;
+    }
+    public String[][] getBoard(){
+        return board;
+    }
+
+
 }
