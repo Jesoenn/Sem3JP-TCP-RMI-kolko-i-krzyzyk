@@ -25,4 +25,5 @@ public interface IGameServer extends Remote {
     boolean isRoomFull(String username) throws RemoteException;
     boolean isRoomChanged(String username) throws RemoteException;
     void roomChanged(int roomId, int howMany) throws RemoteException;
+    int getGameResult(String username) throws RemoteException;
 }

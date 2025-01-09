@@ -124,6 +124,7 @@ public class GameServer implements IGameServer {
             System.out.println(username+" left room <"+room.getId()+">");
         }
         if(!room.getPlayers().isEmpty()){
+            roomChanged(room.getId(),1);
             room.getPlayers().getFirst().setNotReady();
         }
         else
@@ -189,6 +190,7 @@ public class GameServer implements IGameServer {
                         user.addLose();
                 }
                 room.endGame();
+                roomChanged(room.getId(),2);
                 return 3;
             }
             else if(room.checkDraw()){
@@ -198,8 +200,10 @@ public class GameServer implements IGameServer {
                     user.setNotReady();
                     user.addDraw();
                 }
+                roomChanged(room.getId(),2);
                 return 4;
             }
+            roomChanged(room.getId(),2);
             return 2;
         }
         return 0;
@@ -308,6 +312,23 @@ public class GameServer implements IGameServer {
     public void roomChanged(int roomId, int howMany){
         for(int i=0; i< howMany; i++)
             changedRoomsIds.add(roomId);
+    }
+
+    @Override
+    public int getGameResult(String username) throws RemoteException {
+        //jezeli gra sie dopier skonczyla to reset gry skonczonej (gamejustendedd=false)
+        //Potem dodaje 2 refreshe. Do tego zwracam game result
+        User user = searchUser(username);
+        Room room = searchRoom(user.getRoom());
+        boolean changeRoom = false;
+        if(room.getGameJustEnded()){
+            room.setGameJustEndedFalse();
+            changeRoom=true;
+        }
+        int result = room.isWinner(user);
+        if(changeRoom)
+            roomChanged(user.getRoom(),2); //spróbować tylko 1 zamiast 2. Bo ostatniej osobie 2 razy sie wyswielta
+        return result;
     }
 
 

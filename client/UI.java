@@ -19,7 +19,7 @@ public class UI {
 
     public enum Display{
         MAIN_MENU, CREATE_ROOM, LEAVE_ROOM, ROOM, JOIN_ROOM, MARK_READY, WRONG_TURN, MAKE_MOVE,
-        TILE_TAKEN, WINNER, LOSER, ROOM_LIST, PLAYER_STATS, SEND_MESSAGE, TEMP
+        TILE_TAKEN, WINNER, LOSER, DRAW, ROOM_LIST, PLAYER_STATS, SEND_MESSAGE, TEMP
     }
 
     public UI(){
@@ -148,11 +148,14 @@ public class UI {
         }
         else if(display == Display.WINNER){
             System.out.println("You have won the game!");
-            sleep(500);
+            sleep(1000);
         }
         else if(display == Display.LOSER){
             System.out.println("You have lost the game.");
-            sleep(500);
+            sleep(1000);
+        }
+        else if(display == Display.DRAW){
+            System.out.println("Game ended on a draw.");
         }
         return Display.MAIN_MENU;
     }

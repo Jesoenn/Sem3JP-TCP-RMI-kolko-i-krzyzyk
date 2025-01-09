@@ -16,6 +16,7 @@ public class ClientService {
     private IGameServer server;
     private String username, opponentUsername;
     private boolean activeGame, ready, playersTurn;
+    private int gameResult;
     private String[][] board;
     private int roomId;
     private ChatConnection chat;
@@ -62,9 +63,6 @@ public class ClientService {
                             yield viewRoomThread.getDisplay();
                         }
                     }
-
-                    //getGameInfo();
-                    //yield ui.viewRoomInfo(username,opponentUsername,String.valueOf(roomId),activeGame,ready, board,playersTurn);
                 }
                 case SEND_MESSAGE -> {
                     sendMessage();
@@ -72,15 +70,14 @@ public class ClientService {
                 }
                 case MAKE_MOVE -> {
                     int answer = makeMove();
-                    System.out.println(answer);
                     if(answer == 2)
                         yield UI.Display.ROOM;
                     else if (answer == 0){
                         ui.errorStatus(UI.Display.TILE_TAKEN);
                         yield UI.Display.ROOM;
                     }
-                    else if(answer == 3)
-                        ui.errorStatus(UI.Display.WINNER);
+//                    else if(answer == 3)
+//                        ui.errorStatus(UI.Display.WINNER);
                     yield UI.Display.ROOM;
                 }
                 case LEAVE_ROOM -> { leaveRoom(); yield ui.viewMainMenu(); }
@@ -142,10 +139,17 @@ public class ClientService {
         getOpponentUsername();
         isPlayerReady();
         isPlayersTurn();
+        collectGameResult();
         activeGame=server.isRoomGameActive(username);
         if(activeGame){
             board=server.getBoard(username);
         }
+    }
+    private void collectGameResult() throws RemoteException{
+        gameResult = server.getGameResult(username);
+    }
+    public int getGameResult() {
+        return gameResult;
     }
     private void deleteUser() {
         try {
