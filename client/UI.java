@@ -147,15 +147,15 @@ public class UI {
             sleep(500);
         }
         else if(display == Display.WINNER){
-            System.out.println("You have won the game!");
+            System.out.println("\n\nYou have won the game!\n\n");
             sleep(1000);
         }
         else if(display == Display.LOSER){
-            System.out.println("You have lost the game.");
+            System.out.println("\n\nYou have lost the game.\n\n");
             sleep(1000);
         }
         else if(display == Display.DRAW){
-            System.out.println("Game ended on a draw.");
+            System.out.println("\n\nGame ended on a draw.\n\n");
         }
         return Display.MAIN_MENU;
     }
@@ -192,7 +192,9 @@ public class UI {
         sc.nextLine();
     }
     private void checkJoinCommand(String text){
-        String potentialId = text.substring(5);
+        String potentialId="a";
+        if(text.length()>5)
+            potentialId = text.substring(5);
         try{
             roomId = Integer.parseInt(potentialId);
         }catch(NumberFormatException e){

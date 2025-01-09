@@ -327,7 +327,7 @@ public class GameServer implements IGameServer {
         }
         int result = room.isWinner(user);
         if(changeRoom)
-            roomChanged(user.getRoom(),2); //spróbować tylko 1 zamiast 2. Bo ostatniej osobie 2 razy sie wyswielta
+            roomChanged(user.getRoom(),2);
         return result;
     }
 

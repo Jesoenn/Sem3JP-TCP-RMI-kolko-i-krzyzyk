@@ -4,8 +4,6 @@ import client.chat.ChatConnection;
 import client.chat.ChatReceiverThread;
 import shared.IGameServer;
 
-import java.lang.reflect.Array;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,8 +74,6 @@ public class ClientService {
                         ui.errorStatus(UI.Display.TILE_TAKEN);
                         yield UI.Display.ROOM;
                     }
-//                    else if(answer == 3)
-//                        ui.errorStatus(UI.Display.WINNER);
                     yield UI.Display.ROOM;
                 }
                 case LEAVE_ROOM -> { leaveRoom(); yield ui.viewMainMenu(); }
@@ -130,8 +126,8 @@ public class ClientService {
         if(server.isRoomFull(username) && !chat.isConnectionEstablished()){
             chat.connectToOpponent(server.getOpponentIP(username),roomId);
         }
-        if(!server.isRoomFull(username) && !chat.isServerWorking()){
-            System.out.println(chat.isServerWorking());
+        if(!server.isRoomFull(username) && chat.isConnectionEstablished()){
+            //System.out.println(chat.isServerWorking());
             chat.endConnection();
             startReceivingMessages();
         }

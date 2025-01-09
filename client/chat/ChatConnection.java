@@ -68,10 +68,14 @@ public class ChatConnection {
             clientSocket = serverSocket.accept();
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             String message;
-            while (clientSocket.isConnected()) {
-                message = in.readLine();
-                if (message != null)
-                    messageHistory.add(message);
+            try{
+                while (clientSocket.isConnected()) {
+                    message = in.readLine();
+                    if (message != null)
+                        messageHistory.add(message);
+                }
+            }catch (IOException e){
+                System.out.println("You have been disconnected from chat.\n");
             }
         } catch (IOException e) {
             System.out.println("Error accepting client connection.");
@@ -107,8 +111,12 @@ public class ChatConnection {
             if(connectionEstablished){
                 messageHistory.clear();
                 connectionEstablished=false;
-                if(socket!=null)
+                if(socket!=null){
                     socket.close();
+                }
+                if(clientSocket!=null && !clientSocket.isClosed()){
+                    clientSocket.close();
+                }
                 if(serverSocket!=null){
                     serverWorking=false;
                     serverSocket.close();
@@ -122,7 +130,6 @@ public class ChatConnection {
     private int findAvailablePort(int roomId){
         int port1=roomId*2;
         int port2=roomId*2-1;
-        System.out.println("Port1: "+port1+" | Port2: "+port2+")");
         if(isAvailable(port1))
             return port1;
         else if (isAvailable(port2))

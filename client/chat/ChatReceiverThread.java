@@ -16,6 +16,5 @@ public class ChatReceiverThread extends Thread {
     @Override
     public void run() {
         chatConnection.startReceiving(roomId, latch);
-        //System.out.println("KONIEC WATKU");
     }
 }

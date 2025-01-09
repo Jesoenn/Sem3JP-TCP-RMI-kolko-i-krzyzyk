@@ -44,10 +44,6 @@ public class ViewRoomThread extends Thread {
         boolean ready = client.isReady();
         String[][] board = client.getBoard();
         int gameResult = client.getGameResult();
-        // 0 draw
-        // 1 win
-        // 2 lose
-        System.out.println("\nViewRoomThread -> "+gameResult);
         if(gameResult == 0)
             ui.errorStatus(UI.Display.DRAW);
         else if(gameResult == 1)
