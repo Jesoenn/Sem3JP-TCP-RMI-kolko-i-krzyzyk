@@ -46,7 +46,7 @@ public class Room {
         gameActive = false;
         whoseTurn = null;
         gameJustEnded = true;
-        checks=2;
+        checks=2; //ile razy odswiezyc ui -> kazdy raz
     }
     public boolean makeMove(int row, int column, Board.Symbol symbol){
         boolean moveSuccess=board.makeMove(row, column, symbol);
@@ -60,6 +60,7 @@ public class Room {
     public String[][] getBoard(){
         return board.getBoard();
     }
+    //Po wykonanym ruchu sprawdzam czy jest wygrana
     public boolean checkWin(Board.Symbol symbol){
         boolean win = board.checkWin(symbol);
         if(win){
@@ -99,5 +100,8 @@ public class Room {
     }
     public void setGameJustEndedFalse(){
         gameJustEnded = false;
+    }
+    public void setWinner(Board.Symbol symbol){
+        winner=symbol;
     }
 }

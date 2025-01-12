@@ -19,8 +19,6 @@ public class ChatConnection {
     //Zbieram historie wysylu i odbioru i to moge przekazac dalej. Czyszczone jest jak urywa sie polaczenie
     //WYSYLANA WIADOMOSC: NICK: WIADOMOSC
 
-
-    //w ui dac sentMessage i pobierac je
     private String localIP;
     private boolean connectionEstablished;
     private int serverPort;
@@ -42,10 +40,11 @@ public class ChatConnection {
             System.out.println("My local IP: " + localIP);
         } catch (UnknownHostException e) {
             System.out.println("Error finding local IP.");
-            e.printStackTrace();
+            localIP = "error";
         }
     }
 
+    //Stworzenie serwera gracza
     public void startReceiving(int roomId, CountDownLatch latch){
         messageHistory=new ArrayList<>();
         int port=findAvailablePort(roomId);
@@ -60,7 +59,6 @@ public class ChatConnection {
             acceptNewClient();
         } catch (IOException e) {
             System.out.println("Error creating server socket.");
-            e.printStackTrace();
         }
     }
     public void acceptNewClient(){

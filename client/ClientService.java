@@ -2,6 +2,8 @@ package client;
 
 import client.chat.ChatConnection;
 import client.chat.ChatReceiverThread;
+import client.ui.UI;
+import client.ui.ViewRoomThread;
 import shared.IGameServer;
 
 import java.rmi.RemoteException;
@@ -26,8 +28,7 @@ public class ClientService {
         ui = new UI();
         chat = new ChatConnection();
         addUserIP();
-        Runtime.getRuntime().addShutdownHook(new Thread(this::deleteUser));
-
+        Runtime.getRuntime().addShutdownHook(new Thread(this::deleteUser)); // po wysciu z programu usuwa uzytkownika
         start();
     }
     private void start() throws RemoteException {
@@ -52,10 +53,12 @@ public class ClientService {
                     createViewRoomThread(gatherFrame);
                     while(true){
                         ui.sleep(1500);
+                        //Jezeli cos sie zmienilo to odswiezam UI
                         if(server.isRoomChanged(username)){
                             stopRoomThread();
                             yield UI.Display.ROOM;
                         }
+                        //Jezeli wprowadzona komenda
                         if(gatherFrame!=viewRoomThread.getDisplay()){
                             stopRoomThread();
                             yield viewRoomThread.getDisplay();
@@ -123,11 +126,12 @@ public class ClientService {
         return opponentUsername;
     }
     private void getGameInfo() throws RemoteException {
+        //Jezeli serwer pelny i zainicjowanego czatu
         if(server.isRoomFull(username) && !chat.isConnectionEstablished()){
             chat.connectToOpponent(server.getOpponentIP(username),roomId);
         }
+        //Jezeli ktos wyszedl
         if(!server.isRoomFull(username) && chat.isConnectionEstablished()){
-            //System.out.println(chat.isServerWorking());
             chat.endConnection();
             startReceivingMessages();
         }
@@ -147,6 +151,7 @@ public class ClientService {
     public int getGameResult() {
         return gameResult;
     }
+    //Wyjscie z rozgrywki
     private void deleteUser() {
         try {
             server.leave(username);
@@ -188,12 +193,10 @@ public class ClientService {
     }
 
     public void createViewRoomThread(UI.Display display){
-        //System.out.println("Tworze watek do ogladania");
         viewRoomThread = new ViewRoomThread(this, display, ui);
         viewRoomThread.start();
     }
     public void stopRoomThread(){
-        //System.out.println("Usuwam watek do ogladania");
         viewRoomThread.interrupt();
     }
 

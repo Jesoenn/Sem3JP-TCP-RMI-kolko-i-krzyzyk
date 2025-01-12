@@ -42,6 +42,9 @@ public class GameServer implements IGameServer {
         }
     }
 
+    /**
+     * tworzy pokój i zwraca jego id.
+     */
     @Override
     public int createRoom(String username) throws RemoteException {
         for(User user: users) {
@@ -88,6 +91,9 @@ public class GameServer implements IGameServer {
         return null;
     }
 
+    /**
+     * Czy pokoj jest w trakcie gry.
+     */
     @Override
     public boolean isRoomGameActive(String username) throws RemoteException {
         User player = searchUser(username);
@@ -117,8 +123,8 @@ public class GameServer implements IGameServer {
             user.addLose();
             room.getPlayers().getFirst().addWin();
             System.out.println(room.getPlayers().getFirst().getUsername()+" has won in room <"+room.getId()+">");
+            room.setWinner(room.getPlayers().getFirst().getSymbol());
             room.endGame();
-            //Koncze gre jakos jeszcze
         }
         else{
             System.out.println(username+" left room <"+room.getId()+">");
@@ -129,7 +135,6 @@ public class GameServer implements IGameServer {
         }
         else
             deleteRoom(room);
-
         //Uwzglednione:
         //Uzytkownik ma pokoj -1
         //Pokoj usuwa uzytkownika
@@ -137,11 +142,14 @@ public class GameServer implements IGameServer {
         //Jezeli lobby puste to usuwane jest
         //Jezeli dal ze jest gotowy, to juz nie jest
 
-
         //Przy wyjsciu
         // aktualizuje pokoj, gra nieaktywna, aktualizuje klienta.
     }
 
+    /**
+     * Ustawia gracza na gotowego.
+     * Jezeli w pokoju wszyscy gotowi, to wywoluje aktualizacje i zaczynam gre.
+     */
     @Override
     public void setReady(String username) throws RemoteException {
         System.out.println(username+" is ready");
@@ -261,6 +269,9 @@ public class GameServer implements IGameServer {
         return roomIds;
     }
 
+    /**
+     * HashMap graczy z wartosciami ich statystyk
+     */
     @Override
     public HashMap<String, ArrayList<Integer>> getPlayerStats() throws RemoteException {
         HashMap<String, ArrayList<Integer>> playerStats=new HashMap<>();
@@ -297,6 +308,9 @@ public class GameServer implements IGameServer {
         return room.getPlayers().size()==2;
     }
 
+    /**
+     * Jezeli pokoj sie zmienil to aktualizacja UI.
+     */
     @Override
     public boolean isRoomChanged(String username) throws RemoteException {
         User user = searchUser(username);
@@ -308,16 +322,21 @@ public class GameServer implements IGameServer {
         return false;
     }
 
+    /**
+     * Nastąpiła zmiana w pokoju. UI się zaktualizuje.
+     */
     @Override
     public void roomChanged(int roomId, int howMany){
         for(int i=0; i< howMany; i++)
             changedRoomsIds.add(roomId);
     }
 
+    /**
+     * Jezeli gra sie dopiero skonczyla to reset gry.
+     * Odswiezam UI 2 uzytkownikow i wyswietlam zwyciezce
+     */
     @Override
     public int getGameResult(String username) throws RemoteException {
-        //jezeli gra sie dopier skonczyla to reset gry skonczonej (gamejustendedd=false)
-        //Potem dodaje 2 refreshe. Do tego zwracam game result
         User user = searchUser(username);
         Room room = searchRoom(user.getRoom());
         boolean changeRoom = false;
@@ -331,7 +350,7 @@ public class GameServer implements IGameServer {
         return result;
     }
 
-
+    //Rozpoczecie gry
     private boolean readyRoomCheck(int id){
         Room room = searchRoom(id);
         if(room == null)

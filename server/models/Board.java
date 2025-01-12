@@ -58,7 +58,7 @@ public class Board {
         }
         return true;
     }
-
+    //Sprawdzanie czy wygrana
     public boolean areIdentical(Symbol[] symbols, Symbol symbol){
         for(int i=0; i<symbols.length; i++){
             if(symbols[i] != symbol)
